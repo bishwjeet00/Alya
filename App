@@ -1,0 +1,78 @@
+// ... purana code upar
+
+import MiaAvatar from '../components/MiaAvatar';
+
+export default function MiaAI() {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [input, setInput] = useState('');
+  const [mood, setMood] = useState('happy');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<string>('');
+
+  // TTS example (ElevenLabs baad mein)
+  const speak = (text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.pitch = mood === 'happy' ? 1.2 : 0.9;
+    utterance.rate = 1.1;
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+    setCurrentAudio(''); // Real audio URL baad mein
+  };
+
+  // Reply handler mein
+  socket.on('reply', (data) => {
+    setMessages(prev => [...prev, { role: 'mia', content: data.text }]);
+    setMood(data.mood);
+    speak(data.text);  // Auto bolna
+  });
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-pink-950 to-black text-white">
+      {/* Top Header */}
+      <div className="p-6 text-center">
+        <h1 className="text-4xl font-bold">Mia 💖</h1>
+        <p className="text-pink-400">Teri 17 saal ki Gen Z waali dost</p>
+      </div>
+
+      {/* Avatar Section */}
+      <MiaAvatar mood={mood} isSpeaking={isSpeaking} audioUrl={currentAudio} />
+
+      {/* Chat Messages */}
+      <div className="max-w-2xl mx-auto px-4 pb-32">
+        {messages.map((msg, i) => (
+          <div key={i} className={`mb-6 flex ${msg.role === 'mia' ? '' : 'justify-end'}`}>
+            {msg.role === 'mia' && <div className="text-3xl mr-3">👧</div>}
+            <div className={`max-w-xs p-4 rounded-3xl ${msg.role === 'mia' ? 'bg-pink-600/80' : 'bg-purple-600/80'}`}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input Area - Fixed Bottom */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-3 w-full max-w-xl px-4">
+        <button 
+          onClick={startListening}
+          className="bg-pink-600 hover:bg-pink-700 p-5 rounded-2xl transition-all active:scale-95"
+        >
+          🎤
+        </button>
+        
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && sendMessage(input)}
+          className="flex-1 bg-white/10 backdrop-blur border border-white/20 px-6 py-5 rounded-2xl text-lg focus:outline-none focus:border-pink-500"
+          placeholder="Kuch bol na Mia... 😘"
+        />
+        
+        <button 
+          onClick={() => sendMessage(input)}
+          className="bg-pink-600 hover:bg-pink-700 p-5 rounded-2xl transition-all active:scale-95"
+        >
+          ➤
+        </button>
+      </div>
+    </div>
+  );
+}
