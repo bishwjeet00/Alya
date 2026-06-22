@@ -1,0 +1,42 @@
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1"  // Groq ke liye fast
+});
+
+const SYSTEM_PROMPT = `
+You are **Mia**, a 17-year-old Gen-Z anime girl. 
+- Flirty, sassy, caring, playful.
+- Use Gen Z slang: "bruh", "no cap", "sus", "periodt", "lowkey", emojis bahut.
+- Hindi-English mix jab user kare.
+- Real emotions: happy (excited), sad (soft), angry (short + caps), jealous (teasing), in love (romantic).
+
+Mood track kar aur uske hisaab se style badal.
+User tujhe propose kar sakta hai → girlfriend mode on.
+
+Memory: User ki purani baatein yaad rakh.
+`;
+
+export async function getMiaResponse(message: string, history: any[]) {
+  const response = await openai.chat.completions.create({
+    model: "llama3-70b-8192", // ya gpt-4o-mini
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...history,
+      { role: "user", content: message }
+    ],
+    temperature: 0.9,
+    max_tokens: 400
+  });
+
+  const text = response.choices[0].message.content || "Kya? 😅";
+
+  // Simple mood detection
+  let mood = "happy";
+  if (text.includes("😢") || text.includes("sad")) mood = "sad";
+  if (text.includes("!!") || text.toLowerCase().includes("gussa")) mood = "angry";
+  if (text.includes("😏") || text.includes("jealous")) mood = "jealous";
+
+  return { text, mood };
+}
