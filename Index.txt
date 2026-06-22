@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "socket.io": "^4.7.5",
+    "mongoose": "^8.5.0",
+    "openai": "^4.0.0"   // ya groq
+  }
+}
