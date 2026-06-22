@@ -1,0 +1,73 @@
+'use client';
+import { useState, useEffect } from 'react';
+import io from 'socket.io-client';
+import { Mic, Send } from 'lucide-react';
+
+const socket = io('http://localhost:5000');
+
+export default function MiaAI() {
+  const [messages, setMessages] = useState<any[]>([]);
+  const [input, setInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [mood, setMood] = useState('happy');
+
+  // Voice
+  const startListening = () => {
+    const recognition = new (window as any).webkitSpeechRecognition();
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setInput(transcript);
+      sendMessage(transcript);
+    };
+    recognition.start();
+  };
+
+  const sendMessage = async (text: string) => {
+    setMessages(prev => [...prev, { role: 'user', content: text }]);
+    
+    socket.emit('chat', { message: text, history: messages });
+    
+    socket.on('reply', (data) => {
+      setMessages(prev => [...prev, { role: 'mia', content: data.text }]);
+      setMood(data.mood);
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 to-pink-900 text-white">
+      {/* Avatar Area */}
+      <div className="h-96 flex items-center justify-center relative">
+        <div className="w-80 h-80 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center text-8xl shadow-2xl">
+          👧🏻 {/* Yahan 3D anime model aayega baad mein */}
+          <div className="absolute -bottom-4 text-2xl font-bold">Mia 💕</div>
+        </div>
+      </div>
+
+      {/* Chat Area */}
+      <div className="max-w-2xl mx-auto bg-black/50 backdrop-blur p-6 rounded-3xl">
+        {messages.map((msg, i) => (
+          <div key={i} className={`mb-4 ${msg.role === 'mia' ? 'text-left' : 'text-right'}`}>
+            <div className={`inline-block p-4 rounded-2xl ${msg.role === 'mia' ? 'bg-pink-600' : 'bg-purple-600'}`}>
+              {msg.content}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+        <button onClick={startListening} className="bg-pink-600 p-5 rounded-full">
+          <Mic size={32} />
+        </button>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="bg-white/10 px-8 py-5 rounded-full text-lg w-96"
+          placeholder="Bata na Mia... 💬"
+        />
+        <button onClick={() => sendMessage(input)} className="bg-pink-600 p-5 rounded-full">
+          <Send size={32} />
+        </button>
+      </div>
+    </div>
+  );
+}
