@@ -1,0 +1,5 @@
+cd mia-ai-gf   # (ya jahan Next.js hai)
+
+npm install three @react-three/fiber @react-three/drei @react-three/postprocessing
+npm install wawa-lipsync   # Best real-time lip sync library
+npm install @readyplayerme/readyplayer-me   # Free anime-style avatars
